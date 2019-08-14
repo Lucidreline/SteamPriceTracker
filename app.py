@@ -1,11 +1,14 @@
 import gspread
+import keyboard
 from   oauth2client.service_account import ServiceAccountCredentials
 from   selenium import webdriver
 from   datetime import datetime
 
 #this opens up a chrome window
 browser = webdriver.Chrome()
+
 #this minimizes the window so that I dont have to see the amazon page
+keyboard.send('windows+down')
 browser.minimize_window()
 
 #Spreadsheet config - - -
@@ -78,15 +81,14 @@ def GetProductInfo(_itemsList):
 
         #opens the link to the amazon product
         browser.get(_itemsList[i].link)
-        
-        try:
-            #tries to find the price text. It could be under the 'ourprice' ID
-            _itemsList[i].price = browser.find_element_by_id("priceblock_ourprice").text
-        except:
-            #this is ran if the 'ourprice' ID was not found. That means that the product is on a deal
-            #It looks for the dealprice instead
-            _itemsList[i].price = browser.find_element_by_id("priceblock_dealprice").text
 
+        if(len(browser.find_elements_by_id("priceblock_ourprice")) > 0):
+            _itemsList[i].price = browser.find_elements_by_id("priceblock_ourprice")[0].text
+        elif(len(browser.find_elements_by_id("priceblock_dealprice")) > 0):
+            _itemsList[i].price = browser.find_elements_by_id("priceblock_dealprice")[0].text
+        else:
+            _itemsList[i].price = "Unavailable"
+            
         #finds the name of the product
         _itemsList[i].name = browser.find_element_by_id("productTitle").text
 
