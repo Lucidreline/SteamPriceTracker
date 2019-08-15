@@ -1,8 +1,19 @@
+import eVars
 import gspread
 import keyboard
+import requests
 from   oauth2client.service_account import ServiceAccountCredentials
 from   selenium import webdriver
 from   datetime import datetime
+from   time     import sleep
+from twilio.rest import Client
+
+
+account_sid = eVars.ACCOUNT_SID
+auth_token = eVars.AUTH_TOKEN
+
+twilioClient = Client(account_sid, auth_token)
+
 
 #this opens up a chrome window
 browser = webdriver.Chrome()
@@ -35,6 +46,16 @@ class Item:
         self.owner = owner #who is tracking the product
         self.num   = 0     #this determins where on the spreadsheet the data will go
         self.needsToPrintInitialValues = True #This is assigned later
+        self.phoneNumber = "" #Used to send a text message notification
+
+def DollarsToFloat(dollars):
+    #converts $1,899.00 into 1899.00
+    #removes the dollar sign
+    dollars = dollars[1:]
+
+    #removes commas
+    dollars = dollars.replace(',', '')
+    return float(dollars)
 
 def GetDate():
     #gets the current time
@@ -52,6 +73,8 @@ def GetDate():
 def ReadUserList(_itemsList):
     #loop each row until an empty row is found
     for rowNum in range(10000):
+        #this sleep is too stop passing the google sheets quota
+        sleep(.2)
         #adds 3 because I want it to start looking on row 3
         rowNum = rowNum + 3
         
@@ -59,13 +82,11 @@ def ReadUserList(_itemsList):
         if(sheet1.cell(rowNum, 1).value != ""):
             #pack info from spreadsheet into an object
             itemObject = Item(sheet1.cell(rowNum, 1).value, sheet1.cell(rowNum, 2).value)
+            itemObject.name = sheet1.cell(rowNum, 3).value
+            itemObject.phoneNumber = sheet1.cell(rowNum, 4).value
             #send object to the front of the list
             _itemsList.append(itemObject)
         else:
-            #reverses the order of the items list. This is because I was only able to append objects
-            #which put new objects in the front of the list. I want new objects at the end of the list.
-            _itemsList.reverse()
-            #breaks out of the rowNum loop
             break
                    
 def GetProductInfo(_itemsList):
@@ -90,15 +111,38 @@ def GetProductInfo(_itemsList):
             _itemsList[i].price = "Unavailable"
             
         #finds the name of the product
-        _itemsList[i].name = browser.find_element_by_id("productTitle").text
+        ##_itemsList[i].name = browser.find_element_by_id("productTitle").text
 
         #If it is the last object in the list, then it closes the browser
         if(i == (numOfItems - 1)):
             browser.close()
         
+def TextNotification(__item, row, col):
+    sleep(.1)
+    firstPriceCheck   = str(sheet2.cell(3, col).value)
+    firstPriceCheck = DollarsToFloat(firstPriceCheck)
+
+    currentPriceCheck = str(sheet2.cell(row, col).value)
+    currentPriceCheck = DollarsToFloat(currentPriceCheck)
+
+    priceDiffPercent = (currentPriceCheck/firstPriceCheck) * 100
+    priceDiffPercent = 100 - priceDiffPercent
+
+    percentLimitBeforeAlert = 15
+
+    if(priceDiffPercent >= percentLimitBeforeAlert and __item.phoneNumber != ""):
+        Message = __item.name + "'s price has drop atleast " + str(priceDiffPercent) + "%!"
+        #formulate the message that will be sent
+        message = twilioClient.messages.create(
+        to=__item.phoneNumber,
+        from_= eVars.TRIAL_PHONE_NUM,
+        body=Message)
+
 def UpdateSpreadSheet(_itemsList):
     #loops through every object in the objects list
     for i in range(len(_itemsList)):
+        #this sleep is too stop passing the google sheets quota
+        sleep(.1)
         #uses the assigned object number to determine where the first column of the data will be
         startingColumn = (6 * _itemsList[i].num) + 1
 
@@ -128,8 +172,7 @@ def UpdateSpreadSheet(_itemsList):
             sheet2.update_cell(3, startingColumn + 2, _itemsList[i].link)
             sheet2.update_cell(3, startingColumn + 3, GetDate())        
             sheet2.update_cell(3, startingColumn + 4, _itemsList[i].price) 
-            
-            
+                   
         else:
             #look for next open row
             for rowCheck in range(10000):
@@ -139,14 +182,12 @@ def UpdateSpreadSheet(_itemsList):
                     #prints out the date and price on the next open row same column
                     sheet2.update_cell(firstOpenRow, startingColumn + 3, GetDate())
                     sheet2.update_cell(firstOpenRow, startingColumn + 4, _itemsList[i].price)
+                                 
+                    #sends a text notification if the price drops 10 bucks
+                    TextNotification(_itemsList[i], firstOpenRow, startingColumn + 4)
                     break
-
-
+            
 #Run the 3 main methods and pass in the list of item objects
 ReadUserList(itemsList)
 GetProductInfo(itemsList)
 UpdateSpreadSheet(itemsList)
-
-
-
-
