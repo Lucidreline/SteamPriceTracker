@@ -6,13 +6,16 @@ from   oauth2client.service_account import ServiceAccountCredentials
 from   selenium import webdriver
 from   datetime import datetime
 from   time     import sleep
-from twilio.rest import Client
 
 
-account_sid = eVars.ACCOUNT_SID
-auth_token = eVars.AUTH_TOKEN
+phoneNotification = eVars.NOTIFY
 
-twilioClient = Client(account_sid, auth_token)
+if(phoneNotification):
+    from twilio.rest import Client
+    account_sid = eVars.ACCOUNT_SID
+    auth_token = eVars.AUTH_TOKEN
+
+    twilioClient = Client(account_sid, auth_token)
 
 
 #this opens up a chrome window
@@ -22,9 +25,11 @@ browser = webdriver.Chrome()
 keyboard.send('windows+down')
 browser.minimize_window()
 
+keyboard.send('windows+down')
+
 #Spreadsheet config - - -
 #the name of the google spreadsheet
-SPREADSHEET_NAME = "AmazonPriceChecker"
+SPREADSHEET_NAME = eVars.SPREADSHEET_NAME
 #honestly no clue what this does, I just know it is needed
 scope  = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 #goes thru my credentials. I got this from the google API credentials
@@ -128,9 +133,10 @@ def TextNotification(__item, row, col):
     priceDiffPercent = (currentPriceCheck/firstPriceCheck) * 100
     priceDiffPercent = 100 - priceDiffPercent
 
-    percentLimitBeforeAlert = 15
+    if(phoneNotification):
+        percentLimitBeforeAlert = eVars.PERCENT_OFF
 
-    if(priceDiffPercent >= percentLimitBeforeAlert and __item.phoneNumber != ""):
+    if(priceDiffPercent >= percentLimitBeforeAlert and __item.phoneNumber != "" and phoneNotification):
         Message = __item.name + "'s price has drop atleast " + str(priceDiffPercent) + "%!"
         #formulate the message that will be sent
         message = twilioClient.messages.create(
@@ -191,3 +197,5 @@ def UpdateSpreadSheet(_itemsList):
 ReadUserList(itemsList)
 GetProductInfo(itemsList)
 UpdateSpreadSheet(itemsList)
+exit()
+quit()
