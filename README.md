@@ -1,15 +1,17 @@
-#Amazon Price Tracker
+# Amazon Price Tracker
+
 Keep track of multiple amazon products. As long as your computer runs this app every day, you could see how much each product's price increases or decreases over time.
 
-##Installation
+## Installation
+
 You will need windows, chrome, pip, and python 3+.
 
-###Google's Credentials
+### Google's Credentials
 Watch the following video (Up to 3:51) to get your credentials and connect to a Spreadsheet. https://www.youtube.com/watch?v=cnPlKLEGR7E&t=409s
 
 Be sure to put your 'creds.json' in the same folder as 'app.py'. It's important to make sure that the name of the credentials folder is exactly 'creds.json'.
 
-###Install
+### Install
 In your terminal, Install:
 ```bash
 pip install gspread oauth2client selenium keyboard twilio
@@ -22,7 +24,7 @@ keyboard is used to do a shortcut which minimized the browser window
 
 twilio is optional, it allows you to get notifications (Read more about this further down).
 
-###ChromeDriver
+### ChromeDriver
 Open your chrome browser and click the 3 little dots on the top right. Hover over 'Help' and select 'About Google Chrome'. Here you will see a version number. 
 
 visit https://chromedriver.chromium.org/downloads and download the chromedriver for your chrome browser version.
@@ -44,7 +46,7 @@ chromedriver
 
 if you "Starting ChromeDriver blah blah blah..." Then you're golden!
 
-###Config
+### Config
 Create a file named 'eVars.py' in the same folder that app.py is in.
 
 inside of 'eVars.py', type in:
@@ -53,7 +55,7 @@ SPREADSHEET_NAME =  "AmazonPriceChecker"
 ```
 If your spreadsheet has a different name, you can change "AmazonPriceChecker" but make sure the variable name stays the same.
 
-###Notifications
+### Notifications
 If you are not interested in text notifications, type the following in 'eVars.py' and then skip to the Usage section
 ```python
 NOTIFY = False
@@ -78,7 +80,7 @@ TRIAL_PHONE_NUM = '+15547435921'
 ```
 Be sure to spell and capitalize the variable names exactly as I did.
 
-##Usage
+## Usage
 On your spreadsheet, create 2 pages. The first page will contain the list of items you want to track. The second page will contain your data.
 
 Here is an example of my sheet one:
