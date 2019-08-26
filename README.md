@@ -103,11 +103,7 @@ Here is an example of my sheet two:
 
 You don't have to type ANYTHING on your sheet 2. My app will do everything but if you want to make a certain row bold or a certain color like I did, then you can do that yourself after running the app for the first time.
 
+### Schedule
+Lastly, You need some way to run the code everyday. This video worked for me:
 
-
-
-
-
-
-
-
+https://www.youtube.com/watch?v=n2Cr_YRQk7o&t=5s
