@@ -1,15 +1,17 @@
-#Amazon Price Tracker
+# Amazon Price Tracker
+
 Keep track of multiple amazon products. As long as your computer runs this app every day, you could see how much each product's price increases or decreases over time.
 
-##Installation
+## Installation
+
 You will need windows, chrome, pip, and python 3+.
 
-###Google's Credentials
+### Google's Credentials
 Watch the following video (Up to 3:51) to get your credentials and connect to a Spreadsheet. https://www.youtube.com/watch?v=cnPlKLEGR7E&t=409s
 
 Be sure to put your 'creds.json' in the same folder as 'app.py'. It's important to make sure that the name of the credentials folder is exactly 'creds.json'.
 
-###Install
+### Install
 In your terminal, Install:
 ```bash
 pip install gspread oauth2client selenium keyboard twilio
@@ -22,7 +24,7 @@ keyboard is used to do a shortcut which minimized the browser window
 
 twilio is optional, it allows you to get notifications (Read more about this further down).
 
-###ChromeDriver
+### ChromeDriver
 Open your chrome browser and click the 3 little dots on the top right. Hover over 'Help' and select 'About Google Chrome'. Here you will see a version number. 
 
 visit https://chromedriver.chromium.org/downloads and download the chromedriver for your chrome browser version.
@@ -44,7 +46,7 @@ chromedriver
 
 if you "Starting ChromeDriver blah blah blah..." Then you're golden!
 
-###Config
+### Config
 Create a file named 'eVars.py' in the same folder that app.py is in.
 
 inside of 'eVars.py', type in:
@@ -53,7 +55,7 @@ SPREADSHEET_NAME =  "AmazonPriceChecker"
 ```
 If your spreadsheet has a different name, you can change "AmazonPriceChecker" but make sure the variable name stays the same.
 
-###Notifications
+### Notifications
 If you are not interested in text notifications, type the following in 'eVars.py' and then skip to the Usage section
 ```python
 NOTIFY = False
@@ -78,17 +80,18 @@ TRIAL_PHONE_NUM = '+15547435921'
 ```
 Be sure to spell and capitalize the variable names exactly as I did.
 
-##Usage
+## Usage
 On your spreadsheet, create 2 pages. The first page will contain the list of items you want to track. The second page will contain your data.
 
 Here is an example of my sheet one:
 
-![Image of sheet1](Images\spreadsheet1.png)
+![spreadsheet](https://user-images.githubusercontent.com/47621785/63652077-2889c600-c711-11e9-88da-13c62039d77d.png)
 
 In case you were wondering, "owner" is used in case you would like to track an amazon product for someone else. You can put their name as "owner" to tell them apart from the products you are tracking. You can even add their phone number as long as you verify their number on twilio.
 
 You can verify a number on Twilio by going to your dashboard (where you found the Account SID and Token) and clicking the Verified Numbers link:
-![Image of sheet1](Images\VerifiedNumbers.png)
+
+![VerifiedNumbers](https://user-images.githubusercontent.com/47621785/63652133-bf568280-c711-11e9-96b2-b54e1b4ca304.png)
 
 My app looks for SPECIFIC boxes so make sure that "Owner" is column A, "Link" is column B and so on. Also, you can make the list of items as long as you would like AS LONG as you start the list from row 3 as I did.
 
@@ -96,15 +99,11 @@ Remember not to reorder the list.
 
 Here is an example of my sheet two:
 
-![Image of sheet1](Images\spreadsheet2.png)
+![spreadsheet2](https://user-images.githubusercontent.com/47621785/63652126-afd73980-c711-11e9-9fd5-045b83d8cf8e.png)
 
 You don't have to type ANYTHING on your sheet 2. My app will do everything but if you want to make a certain row bold or a certain color like I did, then you can do that yourself after running the app for the first time.
 
+### Schedule
+Lastly, You need some way to run the code everyday. This video worked for me:
 
-
-
-
-
-
-
-
+https://www.youtube.com/watch?v=n2Cr_YRQk7o&t=5s
