@@ -1,16 +1,15 @@
-import eVars
-import gspread
-import keyboard
-import requests
+import eVars, gspread, keyboard, requests
 from   oauth2client.service_account import ServiceAccountCredentials
 from   selenium import webdriver
 from   datetime import datetime
 from   time     import sleep
 
-
+#bool variable; if true, it will send you text notifications
 phoneNotification = eVars.NOTIFY
 
 if(phoneNotification):
+    #I import this here so if someone doesnt want text notifications, they dont
+    #have to download twilio on pip
     from twilio.rest import Client
     account_sid = eVars.ACCOUNT_SID
     auth_token = eVars.AUTH_TOKEN
@@ -22,12 +21,13 @@ if(phoneNotification):
 browser = webdriver.Chrome()
 
 #this minimizes the window so that I dont have to see the amazon page
+#as my computer does this in the background
 keyboard.send('windows+down')
 browser.minimize_window()
 
 keyboard.send('windows+down')
 
-#Spreadsheet config - - -
+# - - -Spreadsheet config - - -
 #the name of the google spreadsheet
 SPREADSHEET_NAME = eVars.SPREADSHEET_NAME
 #honestly no clue what this does, I just know it is needed
@@ -42,7 +42,6 @@ sheet2 = client.open(SPREADSHEET_NAME).get_worksheet(1)
 #creates an empty list where all the item objects will be stored
 itemsList = []
 
-
 class Item:
     def __init__(self, owner, link):
         self.link  = link  #link to the amazon page where the price and name are found
@@ -50,7 +49,7 @@ class Item:
         self.price = 0     #This is assigned when the amazon page is pulled up
         self.owner = owner #who is tracking the product
         self.num   = 0     #this determins where on the spreadsheet the data will go
-        self.needsToPrintInitialValues = True #This is assigned later
+        self.needsToPrintInitialValues = True #This is reassigned later
         self.phoneNumber = "" #Used to send a text message notification
 
 def DollarsToFloat(dollars):
@@ -197,5 +196,5 @@ def UpdateSpreadSheet(_itemsList):
 ReadUserList(itemsList)
 GetProductInfo(itemsList)
 UpdateSpreadSheet(itemsList)
-exit()
+
 quit()

@@ -1,2 +1,2 @@
     If the item list exceeds 40 then data is printed on another sheet
-X    Find out how to have my laptop run this once a day
+    Find out how to have my laptop run this once a day
