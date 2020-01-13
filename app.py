@@ -1,40 +1,19 @@
-import eVars, gspread, keyboard, requests
-from   oauth2client.service_account import ServiceAccountCredentials
-from   selenium import webdriver
-from   datetime import datetime
-from   time     import sleep
-
-#bool variable; if true, it will send you text notifications
-phoneNotification = eVars.NOTIFY
-
-if(phoneNotification):
-    #I import this here so if someone doesnt want text notifications, they dont
-    #have to download twilio on pip
-    from twilio.rest import Client
-    account_sid = eVars.ACCOUNT_SID
-    auth_token = eVars.AUTH_TOKEN
-
-    twilioClient = Client(account_sid, auth_token)
-
-
-#this opens up a chrome window
-browser = webdriver.Chrome()
-
-#this minimizes the window so that I dont have to see the amazon page
-#as my computer does this in the background
-keyboard.send('windows+down')
-browser.minimize_window()
-
-keyboard.send('windows+down')
+from oauth2client.service_account import ServiceAccountCredentials
+from bs4 import BeautifulSoup
+from datetime import datetime
+from urllib import request
+from time import sleep
+import eVars, gspread
+import schedule
 
 # - - -Spreadsheet config - - -
-#the name of the google spreadsheet
-SPREADSHEET_NAME = eVars.SPREADSHEET_NAME
+SPREADSHEET_NAME = eVars.SPREADSHEET_NAME #the name of the google spreadsheet
 #honestly no clue what this does, I just know it is needed
 scope  = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 #goes thru my credentials. I got this from the google API credentials
 creds  = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
 client = gspread.authorize(creds)
+
 # Lets me choose if I want to write/read different sheets.
 sheet1 = client.open(SPREADSHEET_NAME).get_worksheet(0)
 sheet2 = client.open(SPREADSHEET_NAME).get_worksheet(1)
@@ -50,7 +29,6 @@ class Item:
         self.owner = owner #who is tracking the product
         self.num   = 0     #this determins where on the spreadsheet the data will go
         self.needsToPrintInitialValues = True #This is reassigned later
-        self.phoneNumber = "" #Used to send a text message notification
 
 def DollarsToFloat(dollars):
     #converts $1,899.00 into 1899.00
@@ -78,7 +56,7 @@ def ReadUserList(_itemsList):
     #loop each row until an empty row is found
     for rowNum in range(10000):
         #this sleep is too stop passing the google sheets quota
-        sleep(.2)
+        sleep(100)
         #adds 3 because I want it to start looking on row 3
         rowNum = rowNum + 3
         
@@ -87,7 +65,6 @@ def ReadUserList(_itemsList):
             #pack info from spreadsheet into an object
             itemObject = Item(sheet1.cell(rowNum, 1).value, sheet1.cell(rowNum, 2).value)
             itemObject.name = sheet1.cell(rowNum, 3).value
-            itemObject.phoneNumber = sheet1.cell(rowNum, 4).value
             #send object to the front of the list
             _itemsList.append(itemObject)
         else:
@@ -104,52 +81,24 @@ def GetProductInfo(_itemsList):
         #assigns each element a number to determine where on the spreadsheet this will be written
         _itemsList[i].num = i
 
-        #opens the link to the amazon product
-        browser.get(_itemsList[i].link)
 
-        if(len(browser.find_elements_by_id("priceblock_ourprice")) > 0):
-            _itemsList[i].price = browser.find_elements_by_id("priceblock_ourprice")[0].text
-        elif(len(browser.find_elements_by_id("priceblock_dealprice")) > 0):
-            _itemsList[i].price = browser.find_elements_by_id("priceblock_dealprice")[0].text
+        sauce = request.urlopen(_itemsList[i].link).read() #opens the link to the user's amazon product
+        soup = BeautifulSoup(sauce, "lxml") #parses it so that we can extract what we need (the prices)
+
+        if(soup.find(id="priceblock_ourprice")): #checks to make sure this id exsists
+            _itemsList[i].price = soup.find(id="priceblock_ourprice").text.strip() #if it does, this will be our price
+        elif(soup.find(id="priceblock_dealprice")):
+            _itemsList[i].price = soup.find(id="priceblock_dealprice").text.strip()
+        elif(soup.find(id="priceblock_saleprice")):
+            _itemsList[i].price = soup.find(id="priceblock_saleprice").text.strip()
         else:
-            _itemsList[i].price = "Unavailable"
-            
-        #finds the name of the product
-        ##_itemsList[i].name = browser.find_element_by_id("productTitle").text
-
-        #If it is the last object in the list, then it closes the browser
-        if(i == (numOfItems - 1)):
-            browser.close()
-        
-def TextNotification(__item, row, col):
-    sleep(.1)
-    firstPriceCheck   = str(sheet2.cell(3, col).value)
-    firstPriceCheck = DollarsToFloat(firstPriceCheck)
-
-    currentPriceCheck = str(sheet2.cell(row, col).value)
-    currentPriceCheck = DollarsToFloat(currentPriceCheck)
-
-    priceDiffPercent = (currentPriceCheck/firstPriceCheck) * 100
-    priceDiffPercent = 100 - priceDiffPercent
-
-    if(phoneNotification):
-        percentLimitBeforeAlert = eVars.PERCENT_OFF
-
-    if(priceDiffPercent >= percentLimitBeforeAlert and __item.phoneNumber != "" and phoneNotification):
-        Message = __item.name + "'s price has drop atleast " + str(priceDiffPercent) + "%!"
-        #formulate the message that will be sent
-        message = twilioClient.messages.create(
-        to=__item.phoneNumber,
-        from_= eVars.TRIAL_PHONE_NUM,
-        body=Message)
+            _itemsList[i].price = "Unavailable" #if we were not able to find a price
+            print("We were unable to find the price for: " + _itemsList[i].link) #prints an error for me to see if the logs
 
 def UpdateSpreadSheet(_itemsList):
-    #loops through every object in the objects list
-    for i in range(len(_itemsList)):
-        #this sleep is too stop passing the google sheets quota
-        sleep(.1)
-        #uses the assigned object number to determine where the first column of the data will be
-        startingColumn = (6 * _itemsList[i].num) + 1
+    for i in range(len(_itemsList)): #loops through every object in the objects list
+        sleep(100) #this sleep is too stop passing the google sheets quota
+        startingColumn = (6 * _itemsList[i].num) + 1 #uses the assigned object number to determine where the first column of the data will be
 
         #checks to see if the name, link and owner are already on row 3(first row)
         #5 for range because each item takes up 5 columns
@@ -188,13 +137,40 @@ def UpdateSpreadSheet(_itemsList):
                     sheet2.update_cell(firstOpenRow, startingColumn + 3, GetDate())
                     sheet2.update_cell(firstOpenRow, startingColumn + 4, _itemsList[i].price)
                                  
-                    #sends a text notification if the price drops 10 bucks
-                    TextNotification(_itemsList[i], firstOpenRow, startingColumn + 4)
                     break
-            
-#Run the 3 main methods and pass in the list of item objects
-ReadUserList(itemsList)
-GetProductInfo(itemsList)
-UpdateSpreadSheet(itemsList)
 
-quit()
+def sayHi():
+    nowSON = datetime.now()
+    current_time = nowSON.strftime("%H:%M:%S")
+    print("hi from ", current_time)
+
+def RunApp():
+    #Run the 3 main methods and pass in the list of item objects
+    rightNow = datetime.now()
+    current_time = rightNow.strftime("%H:%M:%S")
+    current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
+    print("\n\nStarting App\nTime:", current_time, "\nDate:", current_date)
+
+    try:
+        ReadUserList(itemsList)
+        GetProductInfo(itemsList)
+        UpdateSpreadSheet(itemsList)
+
+        current_time = rightNow.strftime("%H:%M:%S")
+        current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
+        print("\n\nDaily Check-up\nTime:", current_time, "\nDate:", current_date, "\nNo Current errors")
+
+    except:
+        current_time = rightNow.strftime("%H:%M:%S")
+        current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
+        print("\n\nDaily Check-up\nTime:", current_time, "\nDate:", current_date, "\nRan into an error")
+
+ 
+rightNow = datetime.now()
+current_time = rightNow.strftime("%H:%M:%S")
+current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
+print("\n\nStarting App\nTime:", current_time, "\nDate:", current_date)
+
+schedule.every().day.at("00:00").do(RunApp)  #app will be run every day at midnight
+while True:
+    schedule.run_pending()
