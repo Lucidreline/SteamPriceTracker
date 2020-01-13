@@ -4,7 +4,7 @@ Keep track of multiple amazon products. As long as your computer runs this app e
 
 ## Installation
 
-You will need windows, chrome, pip, and python 3+.
+You will need python 3+ and pip.
 
 ### Google's Credentials
 Watch the following video (Up to 3:51) to get your credentials and connect to a Spreadsheet. https://www.youtube.com/watch?v=cnPlKLEGR7E&t=409s
@@ -14,71 +14,21 @@ Be sure to put your 'creds.json' in the same folder as 'app.py'. It's important 
 ### Install
 In your terminal, Install:
 ```bash
-pip install gspread oauth2client selenium keyboard twilio
+pip install gspread oauth2client schedule bs4
 ```
-gspread and oauth2client are from google and are required if you want to access google sheets
+gspread and oauth2client are from google and are required if you want to access google sheets.
 
-selenium is used to go to amazon.com and extract the prices
-
-keyboard is used to do a shortcut which minimized the browser window
-
-twilio is optional, it allows you to get notifications (Read more about this further down).
-
-### ChromeDriver
-Open your chrome browser and click the 3 little dots on the top right. Hover over 'Help' and select 'About Google Chrome'. Here you will see a version number. 
-
-visit https://chromedriver.chromium.org/downloads and download the chromedriver for your chrome browser version.
-
-After downloading the 'chromedriver.exe', place it in a permanent location on your computer. You don't want to move it around. Copy the path to the folder that contains your chrome driver.
-
-For example, if your chromedriver is in your documents, the path would be C:\Users\ma52c\Documents. Instead of 'ma52c' you would put in your username.
-
-After you have your path, push your windows key and search for 'env' and select 'Edit the system environment variables'. Click the 'Environment Variables...' button. Near the top under 'User variables for <Your Username>' you should see a variable named 'Path'. Select that variable and click 'Edit'.
-
-You should now see a list of paths. Click 'New' and paste in the path to the 'chromedriver.exe' from earlier.
-
-Then, hit "Ok", then "Ok" again, and you guessed it, "Ok" again.
-
-To make sure this worked, Open your terminal and type in:
-```bash
-chromedriver
-```
-
-if you "Starting ChromeDriver blah blah blah..." Then you're golden!
+schedule will update your google spreadsheet at midnight everyday (assuming you have this app running 24 hours 7 days a week).
+If you don't plan on running the app 24/7, then dont install schedule, remove the line on the bottom of app.py that uses schedule along with the forever loop, and then add RunApp() at the very bottom. This will update your google spreadsheet every time you run the app.
 
 ### Config
 Create a file named 'eVars.py' in the same folder that app.py is in.
 
 inside of 'eVars.py', type in:
 ```python
-SPREADSHEET_NAME =  "AmazonPriceChecker"
+SPREADSHEET_NAME =  "AmazonPriceTracker"
 ```
 If your spreadsheet has a different name, you can change "AmazonPriceChecker" but make sure the variable name stays the same.
-
-### Notifications
-If you are not interested in text notifications, type the following in 'eVars.py' and then skip to the Usage section
-```python
-NOTIFY = False
-```
-
-If you WOULD like to receive text notifications when your product dropped a certain amount in price, type the following in 'eVars.py':
-```python
-NOTIFY = True
-PERCENT_OFF = 15
-```
-PERCENT_OFF will set when to send you a notification. In this case, you will get a notification when your product is 15% off or more.
-
-Next, visit https://www.twilio.com and sign up for a free trial account. In the sign in process, they will give you a phone number.
-
-After, go to your dashboard and find your ACCOUNT SID and AUTH TOKEN (You will need to click on 'show' to see your AUTH TOKEN). 
-
-go back to 'eVars.py' and put in your ACCOUNT SID, AUTH TOKEN, and the phone number that they gave you:
-```python
-ACCOUNT_SID = 'abCdEFGhIjklO1234'
-AUTH_TOKEN = '123456supersecure'
-TRIAL_PHONE_NUM = '+15547435921'
-```
-Be sure to spell and capitalize the variable names exactly as I did.
 
 ## Usage
 On your spreadsheet, create 2 pages. The first page will contain the list of items you want to track. The second page will contain your data.
@@ -102,8 +52,3 @@ Here is an example of my sheet two:
 ![spreadsheet2](https://user-images.githubusercontent.com/47621785/63652126-afd73980-c711-11e9-9fd5-045b83d8cf8e.png)
 
 You don't have to type ANYTHING on your sheet 2. My app will do everything but if you want to make a certain row bold or a certain color like I did, then you can do that yourself after running the app for the first time.
-
-### Schedule
-Lastly, You need some way to run the code everyday. This video worked for me:
-
-https://www.youtube.com/watch?v=n2Cr_YRQk7o&t=5s
