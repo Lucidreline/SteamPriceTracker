@@ -174,3 +174,4 @@ print("\n\nStarting App\nTime:", current_time, "\nDate:", current_date)
 schedule.every().day.at("00:00").do(RunApp)  #app will be run every day at midnight
 while True:
     schedule.run_pending()
+    sleep(10) #checks if it is midnight every X seconds
