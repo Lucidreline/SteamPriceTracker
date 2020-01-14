@@ -37,13 +37,9 @@ Here is an example of my sheet one:
 
 ![spreadsheet](https://user-images.githubusercontent.com/47621785/63652077-2889c600-c711-11e9-88da-13c62039d77d.png)
 
-In case you were wondering, "owner" is used in case you would like to track an amazon product for someone else. You can put their name as "owner" to tell them apart from the products you are tracking. You can even add their phone number as long as you verify their number on twilio.
+In case you were wondering, "owner" is used in case you would like to track an amazon product for someone else. You can put their name as "owner" to tell them apart from the products you are tracking.
 
-You can verify a number on Twilio by going to your dashboard (where you found the Account SID and Token) and clicking the Verified Numbers link:
-
-![VerifiedNumbers](https://user-images.githubusercontent.com/47621785/63652133-bf568280-c711-11e9-96b2-b54e1b4ca304.png)
-
-My app looks for SPECIFIC boxes so make sure that "Owner" is column A, "Link" is column B and so on. Also, you can make the list of items as long as you would like AS LONG as you start the list from row 3 as I did.
+Another thing, my app looks for SPECIFIC boxes so make sure that "Owner" is column A, "Link" is column B and so on. Also, you can make the list of items as long as you would like AS LONG as you start the list from row 3 as I did.
 
 Remember not to reorder the list.
 
@@ -51,4 +47,4 @@ Here is an example of my sheet two:
 
 ![spreadsheet2](https://user-images.githubusercontent.com/47621785/63652126-afd73980-c711-11e9-9fd5-045b83d8cf8e.png)
 
-You don't have to type ANYTHING on your sheet 2. My app will do everything but if you want to make a certain row bold or a certain color like I did, then you can do that yourself after running the app for the first time.
+DON'T type anything on your sheet 2. My app will do everything but if you want to decorate your sheet in a way where a certain row will be bold or change a certain color like I did, then you can do that yourself after running the app for the first time.
