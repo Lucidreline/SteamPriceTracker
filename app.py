@@ -139,37 +139,24 @@ def UpdateSpreadSheet(_itemsList):
                                  
                     break
 
-def sayHi():
-    nowSON = datetime.now()
-    current_time = nowSON.strftime("%H:%M:%S")
-    print("hi from ", current_time)
+def TimeStamp():
+    rightNow = datetime.now()
+    current_time = rightNow.strftime("%H:%M:%S")
+    current_date = rightNow.strftime("%m-%d-%Y")
+    return "\nTime: " + current_time + "\nDate: " + current_date
 
 def RunApp():
     #Run the 3 main methods and pass in the list of item objects
-    rightNow = datetime.now()
-    current_time = rightNow.strftime("%H:%M:%S")
-    current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
-    print("\n\nStarting App\nTime:", current_time, "\nDate:", current_date)
-
     try:
         ReadUserList(itemsList)
         GetProductInfo(itemsList)
         UpdateSpreadSheet(itemsList)
-
-        current_time = rightNow.strftime("%H:%M:%S")
-        current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
-        print("\n\nDaily Check-up\nTime:", current_time, "\nDate:", current_date, "\nNo Current errors")
-
+        print("\n\nDaily Check-up",TimeStamp(), "No Current errors")
     except:
-        current_time = rightNow.strftime("%H:%M:%S")
-        current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
-        print("\n\nDaily Check-up\nTime:", current_time, "\nDate:", current_date, "\nRan into an error")
+        print("\n\nDaily Check-up", TimeStamp(), "Ran into an error")
 
- 
-rightNow = datetime.now()
-current_time = rightNow.strftime("%H:%M:%S")
-current_date = rightNow.strftime("%Y-%m-%d %H:%M:%S")
-print("\n\nStarting App\nTime:", current_time, "\nDate:", current_date)
+
+print("\n\nStarting App", TimeStamp())
 
 schedule.every().day.at("00:00").do(RunApp)  #app will be run every day at midnight
 while True:
