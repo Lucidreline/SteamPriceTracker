@@ -1,12 +1,12 @@
 from oauth2client.service_account import ServiceAccountCredentials
 from bs4 import BeautifulSoup
 from datetime import datetime
-from urllib import request
 from time import sleep
 import eVars, gspread
 import schedule
+import requests
 
-# - - -Spreadsheet config - - -
+# - - - Spreadsheet config - - -
 SPREADSHEET_NAME = eVars.SPREADSHEET_NAME #the name of the google spreadsheet
 #honestly no clue what this does, I just know it is needed
 scope  = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
@@ -29,7 +29,10 @@ class Item:
         self.owner = owner #who is tracking the product
         self.num   = 0     #this determins where on the spreadsheet the data will go
         self.needsToPrintInitialValues = True #This is reassigned later
+    def __str__(self):
+        return "\nname: " + self.name + "\nlink: " + self.link + "\nnum: " + str(self.num)
 
+# - - - The App's main functions - - -
 def DollarsToFloat(dollars):
     #converts $1,899.00 into 1899.00
     #removes the dollar sign
@@ -56,7 +59,7 @@ def ReadUserList(_itemsList):
     #loop each row until an empty row is found
     for rowNum in range(10000):
         #this sleep is too stop passing the google sheets quota
-        sleep(100)
+        sleep(10)
         #adds 3 because I want it to start looking on row 3
         rowNum = rowNum + 3
         
@@ -70,20 +73,17 @@ def ReadUserList(_itemsList):
         else:
             break
                    
-def GetProductInfo(_itemsList):
-    #takes in a list of objects
+def GetProductInfo(_itemsList): #takes in a list of objects
+    numOfItems = len(_itemsList) #gets the number of objects in the list of objects
 
-    #gets the number of objects in the list of objects
-    numOfItems = len(_itemsList)
+    for i in range(numOfItems): #Loops through every object in the list
+        _itemsList[i].num = i #assigns each element a number to determine where on the spreadsheet this will be written
 
-    #Loops through every object in the list
-    for i in range(numOfItems):
-        #assigns each element a number to determine where on the spreadsheet this will be written
-        _itemsList[i].num = i
+        # Header avoids the 502 error
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"}
+        page = requests.get(itemsList[i].link, headers=headers) #opens the link to the user's amazon product
+        soup = BeautifulSoup(page.content, "lxml") #parses it so that we can extract what we need (the prices)
 
-
-        sauce = request.urlopen(_itemsList[i].link).read() #opens the link to the user's amazon product
-        soup = BeautifulSoup(sauce, "lxml") #parses it so that we can extract what we need (the prices)
 
         if(soup.find(id="priceblock_ourprice")): #checks to make sure this id exsists
             _itemsList[i].price = soup.find(id="priceblock_ourprice").text.strip() #if it does, this will be our price
@@ -128,8 +128,7 @@ def UpdateSpreadSheet(_itemsList):
             sheet2.update_cell(3, startingColumn + 4, _itemsList[i].price) 
                    
         else:
-            #look for next open row
-            for rowCheck in range(10000):
+            for rowCheck in range(10000): #look for next open row
                 #rowCheck + 3 because I want it to start looking on row 3; rowCheck will naturally start at 0
                 if(sheet2.cell((rowCheck + 3), startingColumn + 3).value == ""):
                     firstOpenRow = rowCheck + 3
@@ -137,7 +136,7 @@ def UpdateSpreadSheet(_itemsList):
                     sheet2.update_cell(firstOpenRow, startingColumn + 3, GetDate())
                     sheet2.update_cell(firstOpenRow, startingColumn + 4, _itemsList[i].price)
                                  
-                    break
+                    break #breaks out of the long loop because we dont have to look for more rows to add this item
 
 def TimeStamp():
     rightNow = datetime.now()
@@ -145,20 +144,31 @@ def TimeStamp():
     current_date = rightNow.strftime("%m-%d-%Y")
     return "\nTime: " + current_time + "\nDate: " + current_date
 
+
+# - - - Running the App - - -
 def RunApp():
-    #Run the 3 main methods and pass in the list of item objects
     try:
+        #Run the 3 main methods and pass in the list of item objects
+        print("\nApp has been called")
+
         ReadUserList(itemsList)
+        print("App Has read the User's list")
+
         GetProductInfo(itemsList)
+        print("App has collected the new product prices")
+
         UpdateSpreadSheet(itemsList)
-        print("\n\nDaily Check-up",TimeStamp(), "No Current errors")
+        print("App Has updated the spreadsheet. No Errors occurred at:", TimeStamp(),"\n")
+    
     except:
-        print("\n\nDaily Check-up", TimeStamp(), "Ran into an error")
-
-
+        print("ERROR OCCURRED WHILE RUNNING APP", TimeStamp())
+    
+    
 print("\n\nStarting App", TimeStamp())
+RunApp()
 
-schedule.every().day.at("00:00").do(RunApp)  #app will be run every day at midnight
+# - - - Scheduling the App - - -
+schedule.every().day.at("00:00").do(RunApp)   #app will be run every day at midnight
 while True:
-    schedule.run_pending()
-    sleep(10) #checks if it is midnight every X seconds
+    schedule.run_pending() #checks to see if it is midnight yet
+    sleep(10) #keeps the cpu usage percentages down on my server
