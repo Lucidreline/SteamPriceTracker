@@ -147,21 +147,19 @@ def TimeStamp():
 
 # - - - Running the App - - -
 def RunApp():
-    try:
-        #Run the 3 main methods and pass in the list of item objects
-        print("\nApp has been called")
 
-        ReadUserList(itemsList)
-        print("App Has read the User's list")
+    #Run the 3 main methods and pass in the list of item objects
+    print("\nApp has been called")
 
-        GetProductInfo(itemsList)
-        print("App has collected the new product prices")
+    ReadUserList(itemsList)
+    print("App Has read the User's list")
 
-        UpdateSpreadSheet(itemsList)
-        print("App Has updated the spreadsheet. No Errors occurred at:", TimeStamp(),"\n")
+    GetProductInfo(itemsList)
+    print("App has collected the new product prices")
+
+    UpdateSpreadSheet(itemsList)
+    print("App Has updated the spreadsheet. No Errors occurred at:", TimeStamp(),"\n")
     
-    except:
-        print("ERROR OCCURRED WHILE RUNNING APP", TimeStamp())
     
     
 print("\n\nStarting App", TimeStamp())
