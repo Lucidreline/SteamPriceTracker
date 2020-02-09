@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from time import sleep
 import eVars, gspread
-import schedule
 import requests
 
 # - - - Spreadsheet config - - -
@@ -160,10 +159,15 @@ def RunApp():
     
     
 print("\n\nStarting App", TimeStamp())
-RunApp()
 
-# - - - Scheduling the App - - -
-schedule.every().day.at("00:00").do(RunApp)   #app will be run every day at midnight
+# # - - - Scheduling the App - - -
 while True:
-    schedule.run_pending() #checks to see if it is midnight yet
-    sleep(10) #keeps the cpu usage percentages down on my server
+    currentTime = datetime.now()
+    currentHour = currentTime.hour
+    currentMinute = currentTime.minute
+    currentSecond = currentTime.second
+
+    #Chekcs if it is midnight, It will still work 11 seconds after just incase the app sleeps at exactly midnight, it will still have a second window to run
+    if currentHour == 0 and currentMinute == 0 and (currentSecond >= 0 and currentSecond < 11): 
+        RunApp()
+    sleep(10) #keeps the cpu usage percentages down on my server, I like to exaggerate
