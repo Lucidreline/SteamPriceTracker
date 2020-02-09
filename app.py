@@ -89,7 +89,7 @@ def GetProductInfo(_itemsList): #takes in a list of objects
             _itemsList[i].price = soup.find(id="priceblock_ourprice").text.strip() #if it does, this will be our price
         elif(soup.find(id="priceblock_dealprice")):
             _itemsList[i].price = soup.find(id="priceblock_dealprice").text.strip()
-        elif(soup.find(id="priceblock_saleprice")):
+        elif(soup.find(id="priceblock_saleprice")): soup.findAll()
             _itemsList[i].price = soup.find(id="priceblock_saleprice").text.strip()
         else:
             _itemsList[i].price = "Unavailable" #if we were not able to find a price
