@@ -167,7 +167,7 @@ while True:
     currentMinute = currentTime.minute
     currentSecond = currentTime.second
 
-    #Chekcs if it is midnight, It will still work 11 seconds after just incase the app sleeps at exactly midnight, it will still have a second window to run
-    if currentHour == 0 and currentMinute == 0 and (currentSecond >= 0 and currentSecond < 11): 
+    #Chekcs if it is midnight, It will still work 2 seconds after just incase the app sleeps at exactly midnight, it will still have a second window to run
+    if currentHour == 0 and currentMinute == 0 and (currentSecond >= 0 and currentSecond < 2): 
         RunApp()
-    sleep(10) #keeps the cpu usage percentages down on my server, I like to exaggerate
+    sleep(2) #keeps the cpu usage percentages down on my server, I like to exaggerate
